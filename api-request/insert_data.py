@@ -6,11 +6,11 @@ def connect_to_database():
 
     try:
         conn = psycopg2.connect(
-            host="localhost",
+            host="postgres",
             port=5432,
-            dbname="postgres",
-            user="postgres",
-            password="postgres"
+            dbname="db_psql",
+            user="user_psql",
+            password="pw_psql"
         )
         return conn
     
@@ -47,7 +47,7 @@ def insert_data(conn, data):
 
     try:
         with conn.cursor() as cursor:
-            for record in data[0]:  # Insert only the record for the most recent date
+            for record in data[:1]:  # Insert only the record for the most recent date
                 cursor.execute("""
                     INSERT INTO dev.financial_data (date, open, high, low, close, volume)
                     VALUES (%s, %s, %s, %s, %s, %s);
@@ -66,7 +66,7 @@ def insert_data(conn, data):
         print(f"Failed to insert data: {e}")
         raise
 
-def main():
+def run():
     try:
         data = mock_fetch_data()  # Use mock data for testing
         conn = connect_to_database()
@@ -80,5 +80,3 @@ def main():
         if 'conn' in locals() and conn:
             conn.close()
             print("Database connection closed.")
-
-main()
