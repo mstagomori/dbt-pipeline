@@ -1,0 +1,15 @@
+version: 2
+
+sources:
+  - name: dev
+    database: db_psql
+    tables:
+      - name: financial_data
+        columns:
+          - name: id
+          - name: date
+          - name: open
+          - name: close
+          - name: high
+          - name: low
+          - name: volume
