@@ -1,3 +1,9 @@
+x-superset-user: &superset-user root
+x-superset-volumes: &superset-volumes
+  # /app/pythonpath_docker will be appended to the PYTHONPATH in the final container
+  - ./docker:/app/docker
+  - ./docker/superset_config.py:/app/pythonpath/superset_config.py
+
 services:
   postgres:
     image: postgres:18
@@ -49,6 +55,57 @@ services:
     depends_on:
       - postgres
     command: run
+
+  superset:
+    env_file:
+      - path: docker/.env # default
+        required: true
+    image: apache/superset:3.0.0-py310
+    command: ["/app/docker/docker-bootstrap.sh", "app"]
+    restart: unless-stopped
+    ports:
+      - "8088:8088"
+    user: *superset-user
+    depends_on:
+      superset-init:
+        condition: service_completed_successfully
+    volumes: *superset-volumes
+    environment:
+      DATABASE_DB: "superset_db"
+    networks:
+      - my-network
+
+  superset-init:
+    image: apache/superset:3.0.0-py310
+    command: ["/app/docker/docker-init.sh"]
+    env_file:
+      - path: docker/.env # default
+        required: true
+    depends_on:
+      postgres:
+        condition: service_started
+      redis:
+        condition: service_started
+    user: *superset-user
+    volumes: *superset-volumes
+    environment:
+      DATABASE_DB: "superset_db"
+      SUPERSET_LOAD_EXAMPLES: "no"
+      SUPERSET_LOG_LEVEL: "${SUPERSET_LOG_LEVEL:-info}"
+    healthcheck:
+      disable: true
+    networks:
+      - my-network
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis:/data
+    networks:
+      - my-network
     
 
 networks:
@@ -57,3 +114,5 @@ networks:
 
 volumes:
   postgres_data:
+  redis:
+    external: false

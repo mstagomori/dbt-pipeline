@@ -1,4 +1,4 @@
-from api_request import fetch_data, mock_fetch_data
+from api_request import fetch_data, mock_fetch_data, api_url
 import psycopg2
 
 def connect_to_database():
@@ -47,7 +47,7 @@ def insert_data(conn, data):
 
     try:
         with conn.cursor() as cursor:
-            for record in data[:1]:  # Insert only the record for the most recent date
+            for record in data:  # Insert only the record for the most recent date
                 cursor.execute("""
                     INSERT INTO dev.financial_data (date, open, high, low, close, volume)
                     VALUES (%s, %s, %s, %s, %s, %s);
@@ -68,7 +68,7 @@ def insert_data(conn, data):
 
 def run():
     try:
-        data = mock_fetch_data()  # Use mock data for testing
+        data = fetch_data(api_url)
         conn = connect_to_database()
         create_table(conn)
         insert_data(conn, data)
