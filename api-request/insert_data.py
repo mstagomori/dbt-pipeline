@@ -27,12 +27,11 @@ def create_table(conn):
                 CREATE SCHEMA IF NOT EXISTS dev;
                 CREATE TABLE IF NOT EXISTS dev.financial_data (
                     id SERIAL PRIMARY KEY,
-                    date DATE,
-                    open NUMERIC,
-                    high NUMERIC,
-                    low NUMERIC,
-                    close NUMERIC,
-                    volume NUMERIC
+                    timestamp TIMESTAMPZ,
+                    ask NUMERIC,
+                    bid NUMERIC,
+                    mid NUMERIC,
+                    symbol VARCHAR(10),
                 );
             """)
             conn.commit()
@@ -49,15 +48,14 @@ def insert_data(conn, data):
         with conn.cursor() as cursor:
             for record in data:  # Insert only the record for the most recent date
                 cursor.execute("""
-                    INSERT INTO dev.financial_data (date, open, high, low, close, volume)
-                    VALUES (%s, %s, %s, %s, %s, %s);
+                    INSERT INTO dev.financial_data (timestamp, ask, bid, mid, symbol)
+                    VALUES (%s, %s, %s, %s, %s);
                 """, (
-                    record['date'],
-                    record['open'],
-                    record['high'],
-                    record['low'],
-                    record['close'],
-                    record['volume']
+                    record['timestamp'],
+                    record['ask'],
+                    record['bid'],
+                    record['mid'],
+                    record['symbol']
                 ))
             conn.commit()
             print("Data inserted successfully.\n")
@@ -68,7 +66,7 @@ def insert_data(conn, data):
 
 def run():
     try:
-        data = fetch_data(api_url)
+        data = mock_fetch_data(api_url)
         conn = connect_to_database()
         create_table(conn)
         insert_data(conn, data)

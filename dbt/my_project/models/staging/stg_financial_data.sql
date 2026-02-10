@@ -10,10 +10,9 @@ with source as (
 
 select
     id,
-    date,
-    open,
-    close,
-    high,
-    low,
-    volume
+    TO_CHAR(TO_TIMESTAMP(timestamp),'DD-MM-YYYY') AS date,
+    ask,
+    bid,
+    mid,
+    symbol
 from source

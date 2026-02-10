@@ -4,10 +4,9 @@
 ) }}
 
 select 
-    date,
-    open,
-    close,
-    high,
-    low,
-    volume
+    timestamp,
+    ask,
+    bid,
+    mid,
+    symbol
 from {{ ref('stg_financial_data') }}

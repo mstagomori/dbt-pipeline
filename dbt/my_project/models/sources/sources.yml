@@ -7,9 +7,8 @@ sources:
       - name: financial_data
         columns:
           - name: id
-          - name: date
-          - name: open
-          - name: close
-          - name: high
-          - name: low
-          - name: volume
+          - name: timestamp
+          - name: ask
+          - name: bid
+          - name: mid
+          - name: symbol
