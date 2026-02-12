@@ -12,14 +12,14 @@ def safe_main_callable():
 
 default_args = {
     'description': 'Orchestrator DAG',
-    'start_date': datetime(2026,2,5),
+    'start_date': datetime(2026,2,11),
     'catchup': False,
 }
 
 dag = DAG(
-    dag_id='financial-api-dbt-orchestrator',
+    dag_id='weather-api-dbt-orchestrator',
     default_args=default_args,
-    schedule=timedelta(minutes=1)
+    schedule=timedelta(minutes=5)
 )
 
 with dag:

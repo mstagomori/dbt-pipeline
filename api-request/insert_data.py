@@ -1,4 +1,5 @@
-from api_request import fetch_data, mock_fetch_data, api_url
+from datetime import datetime
+from api_request import fetch_data
 import psycopg2
 
 def connect_to_database():
@@ -25,13 +26,15 @@ def create_table(conn):
         with conn.cursor() as cursor:
             cursor.execute("""
                 CREATE SCHEMA IF NOT EXISTS dev;
-                CREATE TABLE IF NOT EXISTS dev.financial_data (
+                CREATE TABLE IF NOT EXISTS dev.weather_data (
                     id SERIAL PRIMARY KEY,
-                    timestamp TIMESTAMPZ,
-                    ask NUMERIC,
-                    bid NUMERIC,
-                    mid NUMERIC,
-                    symbol VARCHAR(10),
+                    city TEXT,
+                    temperature FLOAT,
+                    weather_descriptions TEXT,
+                    wind_speed FLOAT,
+                    time TIMESTAMP,
+                    inserted_at TIMESTAMP DEFAULT NOW(),
+                    utc_offset TEXT
                 );
             """)
             conn.commit()
@@ -42,21 +45,23 @@ def create_table(conn):
         raise
 
 def insert_data(conn, data):
-    print("Inserting financial data into the database...")
+    print("Inserting weather data into the database...")
 
     try:
+        weather_data = data['current']
+        location_data = data['location']
         with conn.cursor() as cursor:
-            for record in data:  # Insert only the record for the most recent date
-                cursor.execute("""
-                    INSERT INTO dev.financial_data (timestamp, ask, bid, mid, symbol)
-                    VALUES (%s, %s, %s, %s, %s);
-                """, (
-                    record['timestamp'],
-                    record['ask'],
-                    record['bid'],
-                    record['mid'],
-                    record['symbol']
-                ))
+            cursor.execute("""
+                INSERT INTO dev.weather_data (city, temperature, weather_descriptions, wind_speed, time, inserted_at, utc_offset)
+                VALUES (%s, %s, %s, %s, %s, NOW(), %s)
+            """, (
+                location_data['name'],
+                weather_data['temperature'],
+                weather_data['weather_descriptions'][0],
+                weather_data['wind_speed'],
+                location_data['localtime'],
+                location_data['utc_offset'],
+            ))
             conn.commit()
             print("Data inserted successfully.\n")
     
@@ -66,7 +71,7 @@ def insert_data(conn, data):
 
 def run():
     try:
-        data = mock_fetch_data(api_url)
+        data = fetch_data()
         conn = connect_to_database()
         create_table(conn)
         insert_data(conn, data)

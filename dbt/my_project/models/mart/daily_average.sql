@@ -2,10 +2,10 @@
     materialized='table'
 ) }}
 
--- Calculate the daily average closing price from financial data
+-- Calculate the daily average closing price from weather data
 select
-    date_trunc('day', date)::date as day,
-    avg(mid) as average_mid_price
-from {{ ref('stg_financial_data') }}
+    date_trunc('day', weather_time_local)::date as day,
+    avg(temperature) as average_temperature
+from {{ ref('stg_weather_data') }}
 group by day
 order by day
